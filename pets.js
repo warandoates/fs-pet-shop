@@ -30,27 +30,19 @@ function destroy() {
       if (readErr) throw readErr;
       const pets = JSON.parse(info);
       const index = process.argv[3];
-      const age = Number(process.argv[4]);
-      const kind = process.argv[5];
-      const name = process.argv[6];
       if (!index) {
           console.error(`Usage: ${node} ${file} ${cmd} INDEX`);
           process.exit(1);
       } else {
-          pets.splice(index, 1, {
-              age,
-              kind,
-              name
-          });
+
+          let deadObj = pets[index];
+          pets.splice(index, 1);
+          console.log(deadObj);
+
           var petsJSON = JSON.stringify(pets);
       }
       fs.writeFile(petsDB, petsJSON, (writeErr) => {
           if (writeErr) throw writeErr;
-          console.log({
-              age,
-              kind,
-              name
-          });
       });
   });
 }
