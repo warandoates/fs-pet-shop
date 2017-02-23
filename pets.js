@@ -1,5 +1,6 @@
-'use strict';
+#!/usr/bin/env node
 
+'use strict';
 const fs = require('fs');
 const path = require('path');
 const fsp = require('fs-promise');
@@ -13,7 +14,7 @@ switch (cmd) {
         read();
         break;
     case 'create':
-        create();
+        creaate();
         break;
     case 'update':
         update();

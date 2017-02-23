@@ -27,7 +27,8 @@
   "dependencies": {
     "express": "^4.14.1",
     "fs-promise": "^2.0.0",
-    "nodemon": "^1.9.1"
+    "nodemon": "^1.9.1",
+    "shebang": "0.0.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",
