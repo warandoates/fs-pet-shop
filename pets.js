@@ -14,7 +14,7 @@ switch (cmd) {
         read();
         break;
     case 'create':
-        creaate();
+        create();
         break;
     case 'update':
         update();
