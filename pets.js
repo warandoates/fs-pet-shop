@@ -25,110 +25,108 @@ switch (cmd) {
     default:
         runErr();
 }
+function create() {
+  fsp.readFile(petsDB, 'utf8')
+    .then((petsJSONData) => {
+      return JSON.parse(petsJSONData);
+    })
+    .then((petsData) => {
+        const pets = petsData;
 
-function destroy() {
-  fs.readFile(petsDB, 'utf8', (readErr, info) => {
-      if (readErr) throw readErr;
-      const pets = JSON.parse(info);
-      const index = process.argv[3];
-      if (!index) {
-          console.error(`Usage: ${node} ${file} ${cmd} INDEX`);
-          process.exit(1);
-      } else {
-
-          let deadObj = pets[index];
-          pets.splice(index, 1);
-          console.log(deadObj);
-
-          var petsJSON = JSON.stringify(pets);
-      }
-      fs.writeFile(petsDB, petsJSON, (writeErr) => {
-          if (writeErr) throw writeErr;
-      });
-  });
+        const age = Number(process.argv[3]);
+        const kind = process.argv[4];
+        const name = process.argv[5];
+        if (!age || !kind || !name) {
+            console.error(`Usage: ${node} ${file} ${cmd} AGE KIND NAME`);
+            process.exit(1);
+        }
+        pets.push({ age, kind, name });
+        console.log({ age, kind, name });
+        return JSON.stringify(pets);
+        })
+        .then((updatedJSON) => {
+        fsp.writeFile(petsDB, updatedJSON)
+    });
 }
 
-    function read() {
-        const indexParam = process.argv[3];
-        if (indexParam) {
-            fs.readFile(petsDB, 'utf8', (readErr, petsJSON) => {
-                if (readErr) throw readErr;
-                let pets = JSON.parse(petsJSON);
+function destroy() {
+    fsp.readFile(petsDB, 'utf8')
+        .then((info) => {
+            return JSON.parse(info);
+        })
+        .then((petsData) => {
+            const index = process.argv[3];
+            if (!index) {
+                console.error(`Usage: ${node} ${file} ${cmd} INDEX`);
+                process.exit(1);
+            }
+            let pets = petsData;
+            let deadObj = pets[index];
+            pets.splice(index, 1);
+            console.log(deadObj);
+            return JSON.stringify(pets);
+        })
+        .then((petsJSON) => {
+            fsp.writeFile(petsDB, petsJSON);
+        });
+}
+
+function read() {
+    const indexParam = process.argv[3];
+    if (indexParam) {
+        fsp.readFile(petsDB, 'utf8')
+            .then((petsJSON) => {
+                return JSON.parse(petsJSON);
+            })
+            .then((petsData) => {
+                let pets = petsData;
                 if (!pets[indexParam]) {
                     console.error(`Usage: ${node} ${file} ${cmd} INDEX`);
-                } else {
-                    console.log(pets[indexParam]);
                 }
+                console.log(pets[indexParam]);
             });
+    } else {
+        fsp.readFile(petsDB, 'utf8')
+        .then((petsJSON) => {
+            let pets = JSON.parse(petsJSON);
+            console.log(pets);
+        });
+    }
+}
+
+
+
+function update() {
+    fs.readFile(petsDB, 'utf8', (readErr, info) => {
+        if (readErr) throw readErr;
+        const pets = JSON.parse(info);
+        const index = process.argv[3];
+        const age = Number(process.argv[4]);
+        const kind = process.argv[5];
+        const name = process.argv[6];
+        if (!index || !age || !kind || !name) {
+            console.error(`Usage: ${node} ${file} ${cmd} INDEX AGE KIND NAME`);
+            process.exit(1);
         } else {
-            fs.readFile(petsDB, 'utf8', (readErr, petsJSON) => {
-                if (readErr) throw readErr;
-                let pets = JSON.parse(petsJSON);
-                console.log(pets);
+            pets.splice(index, 0, {
+                age,
+                kind,
+                name
             });
+            var petsJSON = JSON.stringify(pets);
         }
-    }
-
-    function create() {
-        fs.readFile(petsDB, 'utf8', (readErr, data) => {
-            if (readErr) throw readErr;
-            const pets = JSON.parse(data);
-            const age = Number(process.argv[3]);
-            const kind = process.argv[4];
-            const name = process.argv[5];
-            if (!age || !kind || !name) {
-                console.error(`Usage: ${node} ${file} ${cmd} AGE KIND NAME`);
-                process.exit(1);
-            } else {
-                pets.push({
-                    age,
-                    kind,
-                    name
-                });
-                var petsJSON = JSON.stringify(pets);
-            }
-            fs.writeFile(petsDB, petsJSON, (writeErr) => {
-                if (writeErr) throw writeErr;
-                console.log({
-                    age,
-                    kind,
-                    name
-                });
+        fs.writeFile(petsDB, petsJSON, (writeErr) => {
+            if (writeErr) throw writeErr;
+            console.log({
+                age,
+                kind,
+                name
             });
         });
-    }
+    });
+}
 
-    function update() {
-        fs.readFile(petsDB, 'utf8', (readErr, info) => {
-            if (readErr) throw readErr;
-            const pets = JSON.parse(info);
-            const index = process.argv[3];
-            const age = Number(process.argv[4]);
-            const kind = process.argv[5];
-            const name = process.argv[6];
-            if (!index || !age || !kind || !name) {
-                console.error(`Usage: ${node} ${file} ${cmd} INDEX AGE KIND NAME`);
-                process.exit(1);
-            } else {
-                pets.splice(index, 0, {
-                    age,
-                    kind,
-                    name
-                });
-                var petsJSON = JSON.stringify(pets);
-            }
-            fs.writeFile(petsDB, petsJSON, (writeErr) => {
-                if (writeErr) throw writeErr;
-                console.log({
-                    age,
-                    kind,
-                    name
-                });
-            });
-        });
-    }
-
-    function runErr() {
-        console.error(`Usage: ${node} ${file} [read | create | update | destroy]`);
-        process.exit(1);
-    }
+function runErr() {
+    console.error(`Usage: ${node} ${file} [read | create | update | destroy]`);
+    process.exit(1);
+}

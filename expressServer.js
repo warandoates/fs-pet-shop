@@ -51,6 +51,7 @@ app.post('/pets', (req, res) => {
                 console.error(writeErr.stack);
                 return res.sendStatus(500);
             }
+
             res.send(req.body);
         });
     });
