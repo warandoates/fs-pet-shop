@@ -5,9 +5,11 @@ const port = process.env.PORT || 8000;
 const fs = require('fs');
 const path = require('path');
 
+// Dependencies
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const fsp = require('fs-promise');
+const basicAuth = require('basic-auth');
 
 const petsDB = path.join(__dirname, 'pets.json');
 
@@ -17,8 +19,23 @@ app.disable('x-powered-by');
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 
+let auth = function(req, res, next) {
+  function unauthorized(res) {
+    res.set('WWW-Authenticate', 'Basic realm="Required"');
+    return res.send(401);
+  };
+  let user = basicAuth(req);
+  if (!user || !user.name || !user.pass) {
+    return unauthorized(res);
+  };
+  if(user.name === 'admin' && user.pass === 'meowmix') {
+    return next();
+  } else {
+    return unauthorized(res);
+  };
+};
 
-app.get('/pets', (req, res) => {
+app.get('/pets', auth, (req, res) => {
     fsp.readFile(petsDB, 'utf8')
         .then((petsDBData) => {
             let pets = JSON.parse(petsDBData);
@@ -30,7 +47,7 @@ app.get('/pets', (req, res) => {
         });
 });
 
-app.get('/pets/:index', (req, res) => {
+app.get('/pets/:index', auth, (req, res) => {
     fsp.readFile(petsDB, 'utf8')
         .catch((readErr) => {
             console.error(readErr.stack);
@@ -51,7 +68,7 @@ app.get('/pets/:index', (req, res) => {
         });
 });
 
-app.post('/pets', (req, res) => {
+app.post('/pets', auth, (req, res) => {
     fsp.readFile(petsDB, 'utf8')
         .catch((readErr) => {
             console.error(readErr.stack);
@@ -82,7 +99,7 @@ app.post('/pets', (req, res) => {
         });
 });
 
-app.patch('/pets/:index', (req, res) => {
+app.patch('/pets/:index', auth, (req, res) => {
   fsp.readFile(petsDB, 'utf8')
   .catch((readErr) => {
     console.error(readErr.stack);
@@ -120,7 +137,7 @@ app.patch('/pets/:index', (req, res) => {
   });
 });
 
-app.delete('/pets/:index', (req, res) => {
+app.delete('/pets/:index', auth, (req, res) => {
   fsp.readFile(petsDB, 'utf8')
   .catch((readErr) => {
     console.error(readErr.stack);
