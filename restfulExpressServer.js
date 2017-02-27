@@ -37,7 +37,7 @@ app.use(auth, (req, res, next) => {
     next();
 });
 
-app.use(express.static(path.join(__dirname, '/')));
+app.use(express.static(path.join(__dirname, './')));
 
 app.get('/pets', (req, res) => {
     fsp.readFile(petsDB, 'utf8')
