@@ -5,11 +5,11 @@ const fs = require('fs');
 const path = require('path');
 const fsp = require('fs-promise');
 const petsDB = path.join(__dirname, 'pets.json');
-const node = path.basename(process.argv[0]);
-const file = path.basename(process.argv[1]);
-const cmd = process.argv[2];
+const NODE = path.basename(process.argv[0]);
+const FILE = path.basename(process.argv[1]);
+const CMD = process.argv[2];
 
-switch (cmd) {
+switch (CMD) {
     case 'read':
         read();
         break;
@@ -37,7 +37,7 @@ function create() {
             const kind = process.argv[4];
             const name = process.argv[5];
             if (!age || !kind || !name) {
-                console.error(`Usage: ${node} ${file} ${cmd} AGE KIND NAME`);
+                console.error(`Usage: ${NODE} ${FILE} ${CMD} AGE KIND NAME`);
                 process.exit(1);
             }
             pets.push({ age, kind, name });
@@ -57,7 +57,7 @@ function destroy() {
         .then((petsData) => {
             const index = process.argv[3];
             if (!index) {
-                console.error(`Usage: ${node} ${file} ${cmd} INDEX`);
+                console.error(`Usage: ${NODE} ${FILE} ${CMD} INDEX`);
                 process.exit(1);
             }
             let pets = petsData;
@@ -81,7 +81,7 @@ function read() {
             .then((petsData) => {
                 let pets = petsData;
                 if (!pets[indexParam]) {
-                    console.error(`Usage: ${node} ${file} ${cmd} INDEX`);
+                    console.error(`Usage: ${NODE} ${FILE} ${CMD} INDEX`);
                 }
                 console.log(pets[indexParam]);
             });
@@ -107,7 +107,7 @@ function update() {
             const name = process.argv[6];
 
             if (!index || !age || !kind || !name) {
-                console.error(`Usage: ${node} ${file} ${cmd} INDEX AGE KIND NAME`);
+                console.error(`Usage: ${NODE} ${FILE} ${CMD} INDEX AGE KIND NAME`);
                 process.exit(1);
             }
             pets.splice(index, 0, { age, kind, name });
@@ -120,6 +120,6 @@ function update() {
 }
 
 function runErr() {
-    console.error(`Usage: ${node} ${file} [read | create | update | destroy]`);
+    console.error(`Usage: ${NODE} ${FILE} [read | create | update | destroy]`);
     process.exit(1);
 }

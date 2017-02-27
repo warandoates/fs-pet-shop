@@ -11,12 +11,9 @@ const fsp = require('fs-promise');
 
 const petsDB = path.join(__dirname, 'pets.json');
 
-
-
 app.disable('x-powered-by');
 app.use(morgan('dev'));
 app.use(bodyParser.json());
-
 
 app.get('/pets', (req, res) => {
     fsp.readFile(petsDB, 'utf8')
@@ -29,7 +26,6 @@ app.get('/pets', (req, res) => {
             return res.sendStatus(500);
         });
 });
-
 
 app.post('/pets', (req, res) => {
     fsp.readFile(petsDB, 'utf8')
@@ -62,7 +58,6 @@ app.post('/pets', (req, res) => {
         });
 });
 
-
 app.get('/pets/:index', (req, res) => {
     fsp.readFile(petsDB, 'utf8')
         .catch((readErr) => {
@@ -82,11 +77,6 @@ app.get('/pets/:index', (req, res) => {
             res.send(pets[index]);
 
         });
-});
-
-
-app.use((req, res) => {
-    res.sendStatus(404);
 });
 
 

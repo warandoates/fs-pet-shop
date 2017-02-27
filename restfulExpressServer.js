@@ -111,6 +111,11 @@ app.patch('/pets/:index', (req, res) => {
         .then((realPetsJson) => {
             const pets = realPetsJson;
             const index = Number(req.params.index);
+
+            if(index < 0 || index >= pets.length) {
+              return res.sendStatus(404);
+            }
+
             const pet = pets[index];
             const kind = req.body.kind;
             const name = req.body.name;
@@ -119,6 +124,7 @@ app.patch('/pets/:index', (req, res) => {
             if (kind) pet.kind = kind;
             if (age) pet.age = age;
             if (name) pet.name = name;
+
             res.send(pet);
             return JSON.stringify(pets);
         })
