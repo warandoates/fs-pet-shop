@@ -1,21 +1,41 @@
 'use strict';
-const express = require('express');
-const app = express();
-const port = process.env.PORT || 8000;
+// Dependencies
 const fs = require('fs');
 const path = require('path');
-
-// Dependencies
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const fsp = require('fs-promise');
 const basicAuth = require('basic-auth');
 
-const petsDB = path.join(__dirname, 'pets.json');
-
+// express
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 8000;
 app.disable('x-powered-by');
 app.use(morgan('dev'));
 app.use(bodyParser.json());
+
+const petsDB = path.join(__dirname, 'pets.json');
+
+function petsReader() {
+    return fsp.readFile(petsDB, 'utf8')
+        .catch((readErr) => {
+            console.error(readErr.stack);
+            return res.sendStatus(500);
+        })
+        .then((petsDBData) => {
+            return JSON.parse(petsDBData);
+        });
+}
+
+// petsDB -read, write and routes authentication functions
+function petsWriter(modifiedJSON) {
+    return fsp.writeFile(petsDB, modifiedJSON)
+        .catch((writeErr) => {
+            console.error(writeErr.stack);
+            return res.sendStatus(500);
+        });
+}
 
 let auth = function(req, res, next) {
     function unauthorized(res) {
@@ -33,46 +53,25 @@ let auth = function(req, res, next) {
     };
 };
 
+// middleWare and httpMethod requests
 app.use(auth, (req, res, next) => {
     next();
 });
 
 app.get('/pets', (req, res) => {
-    fsp.readFile(petsDB, 'utf8')
-        .catch((readErr) => {
-            console.error(readErr.stack);
-            return res.sendStatus(500);
-        })
-        .then((petsDBData) => {
-            let pets = JSON.parse(petsDBData);
+    petsReader()
+        .then((pets) => {
             res.send(pets);
         });
 });
 
-function petsReader() {
-  fsp.readFile(petsDB, 'utf8')
-  .catch((readErr) => {
-    console.error(readErr.stack);
-    return res.sendStatus(500);
-  })
-  .then((petsDBData) => {
-    return JSON.parse(petsDBData);
-  });
-}
-
 app.get('/pets/:index', (req, res) => {
-  fsp.readFile(petsDB, 'utf8')
-  .catch((readErr) => {
-    console.error(readErr.stack);
-    return res.sendStatus(500);
-  })
-  .then((petsDBData) => {
-    return JSON.parse(petsDBData);
-  })
+    fsp.readFile(petsDB, 'utf8')
+    petsReader()
         .then((realPetsJson) => {
             const pets = realPetsJson;
             let index = Number(req.params.index);
-            if (index < 0 || index >= pets.length || Number.isNaN(index)) {
+            if (index < 0 || index >= pets.length || isNaN(index)) {
                 return res.sendStatus(404);
             }
             res.send(pets[index]);
@@ -80,14 +79,7 @@ app.get('/pets/:index', (req, res) => {
 });
 
 app.post('/pets', (req, res) => {
-    fsp.readFile(petsDB, 'utf8')
-        .catch((readErr) => {
-            console.error(readErr.stack);
-            return res.sendStatus(500);
-        })
-        .then((petsDBData) => {
-            return JSON.parse(petsDBData);
-        })
+    petsReader()
         .then((realPetsJson) => {
             const pets = realPetsJson;
             const name = req.body.name;
@@ -99,32 +91,19 @@ app.post('/pets', (req, res) => {
             }
             pets.push(req.body);
             res.send(req.body);
-            return JSON.stringify(pets);
-        })
-        .then((updatedPetsJSON) => {
-            fsp.writeFile(petsDB, updatedPetsJSON);
-        })
-        .catch((writeErr) => {
-            console.error(writeErr.stack);
-            return res.sendStatus(500);
+            let updatedPet = JSON.stringify(pets);
+            petsWriter(updatedPet);
         });
 });
 
 app.patch('/pets/:index', (req, res) => {
-    fsp.readFile(petsDB, 'utf8')
-        .catch((readErr) => {
-            console.error(readErr.stack);
-            return res.sendStatus(500);
-        })
-        .then((petsDBData) => {
-            return JSON.parse(petsDBData);
-        })
+    petsReader()
         .then((realPetsJson) => {
             const pets = realPetsJson;
             const index = Number(req.params.index);
 
-            if(index < 0 || index >= pets.length) {
-              return res.sendStatus(404);
+            if (index < 0 || index >= pets.length || isNaN(index)) {
+                return res.sendStatus(404);
             }
 
             const pet = pets[index];
@@ -137,47 +116,28 @@ app.patch('/pets/:index', (req, res) => {
             if (name) pet.name = name;
 
             res.send(pet);
-            return JSON.stringify(pets);
-        })
-        .then((updatedPetsJSON) => {
-            fsp.writeFile(petsDB, updatedPetsJSON);
-        })
-        .catch((writeErr) => {
-            console.error(writeErr.stack);
-            return res.sendStatus(500);
+            let updatedPet = JSON.stringify(pets);
+            petsWriter(updatedPet);
         });
 });
 
 app.delete('/pets/:index', (req, res) => {
-    fsp.readFile(petsDB, 'utf8')
-        .catch((readErr) => {
-            console.error(readErr.stack);
-            return res.sendStatus(500);
-        })
-        .then((petsDBData) => {
-            return JSON.parse(petsDBData);
-        })
+    petsReader()
         .then((realPetsJson) => {
             const pets = realPetsJson;
             const index = Number(req.params.index);
+            if (index < 0 || index >= pets.length || isNaN(index)) {
+                return res.sendStatus(404);
+            }
             const deadPet = pets[index];
             pets.splice(index, 1);
             res.send(deadPet);
-            return JSON.stringify(pets);
-        })
-        .then((updatedPetsJSON) => {
-            fsp.writeFile(petsDB, updatedPetsJSON);
-        })
-        .catch((writeErr) => {
-            console.error(writeErr.stack);
-            return res.sendStatus(505);
+            let updatedPet = JSON.stringify(pets);
+            petsWriter(updatedPet);
         });
 });
 
-app.use((req, res) => {
-    res.sendStatus(404);
-});
-
+app.use((req, res) => res.sendStatus(404));
 app.listen(port, () => console.log("listening on port", port));
 
 module.exports = app;
