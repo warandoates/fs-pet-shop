@@ -49,15 +49,26 @@ app.get('/pets', (req, res) => {
         });
 });
 
+function petsReader() {
+  fsp.readFile(petsDB, 'utf8')
+  .catch((readErr) => {
+    console.error(readErr.stack);
+    return res.sendStatus(500);
+  })
+  .then((petsDBData) => {
+    return JSON.parse(petsDBData);
+  });
+}
+
 app.get('/pets/:index', (req, res) => {
-    fsp.readFile(petsDB, 'utf8')
-        .catch((readErr) => {
-            console.error(readErr.stack);
-            return res.sendStatus(500);
-        })
-        .then((petsDBData) => {
-            return JSON.parse(petsDBData);
-        })
+  fsp.readFile(petsDB, 'utf8')
+  .catch((readErr) => {
+    console.error(readErr.stack);
+    return res.sendStatus(500);
+  })
+  .then((petsDBData) => {
+    return JSON.parse(petsDBData);
+  })
         .then((realPetsJson) => {
             const pets = realPetsJson;
             let index = Number(req.params.index);
